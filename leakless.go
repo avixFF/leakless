@@ -30,14 +30,25 @@ type Launcher struct {
 
 	pid chan int
 	err string
+
+	// Options to start leakless with
+	opts *shared.LeaklessOptions
 }
 
 // New leakless instance
-func New() *Launcher {
-	return &Launcher{
+func New(options ...*shared.LeaklessOptions) *Launcher {
+	l := &Launcher{
 		Lock: 2978,
 		pid:  make(chan int),
 	}
+
+	// "options" argument is optional, therefore we need
+	// to check if it is actually set before accessing
+	if len(options) > 0 {
+		l.opts = options[0]
+	}
+
+	return l
 }
 
 // Command will try to download the leakless bin and prefix the exec.Cmd with the leakless options.
@@ -52,6 +63,15 @@ func (l *Launcher) Command(name string, arg ...string) *exec.Cmd {
 	addr := l.serve(uid)
 
 	arg = append([]string{uid, addr, name}, arg...)
+
+	// Build leakless options string from launcher options
+	options := shared.BuildOptionsString(l.opts)
+
+	// Prepend leakless flags before any other arguments
+	if len(options) > 0 {
+		arg = append([]string{options}, arg...)
+	}
+
 	return exec.Command(bin, arg...)
 }
 
