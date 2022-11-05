@@ -6,9 +6,13 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"syscall"
+
+	"github.com/ysmood/leakless/pkg/shared"
 )
 
-func osSetupCmd(cmd *exec.Cmd) error {
+func osSetupCmd(cmd *exec.Cmd, opts *shared.LeaklessOptions) error {
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: opts.Windows.HideWindow}
 	return nil
 }
 

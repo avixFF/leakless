@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/ysmood/leakless/pkg/shared"
@@ -15,29 +16,40 @@ import (
 func main() {
 	ignoreSignals()
 
-	if len(os.Args) == 2 && os.Args[1] == "--version" {
-		_, _ = os.Stdout.WriteString(shared.Version + "\n")
-		return
+	// Strip binary path from the argument list
+	os.Args = os.Args[1:]
+
+	options := shared.ParseOptionsString(strings.Join(os.Args, " "))
+
+	// Iterate over all arguments that start with "--", process them
+	// and remove from the os.Args list
+	for len(os.Args) > 0 && strings.HasPrefix(os.Args[0], "--") {
+		if os.Args[0] == "--version" {
+			_, _ = os.Stdout.WriteString(shared.Version + "\n")
+			return
+		}
+
+		os.Args = os.Args[1:]
 	}
 
-	if len(os.Args) < 4 {
-		panic("wrong args, usage: leakless <uid> <tcp-addr> <cmd> [args...]")
+	if len(os.Args) < 3 {
+		panic("wrong args, usage: leakless [--flags...] <uid> <tcp-addr> <cmd> [args...]")
 	}
 
-	uid := os.Args[1]
-	addr := os.Args[2]
+	uid := os.Args[0]
+	addr := os.Args[1]
 
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	cmd := exec.Command(os.Args[3], os.Args[4:]...)
+	cmd := exec.Command(os.Args[2], os.Args[3:]...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	err = osSetupCmd(cmd)
+	err = osSetupCmd(cmd, options)
 	if err != nil {
 		_ = send(conn, 0, err.Error())
 		log.Fatalln(err)
