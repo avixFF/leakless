@@ -6,13 +6,14 @@ import (
 	"strings"
 )
 
-// Options that leakless should use for running child processes
+// LeaklessOptions are the options that leakless should use
+// for running child processes
 type LeaklessOptions struct {
 	// Windows-specific process options
 	Windows *WindowsOptions
 }
 
-// Windows-specific process options
+// WindowsOptions is a collection of Windows-specific process options
 type WindowsOptions struct {
 	// Whether to hide GUI window or not (default: `false`)
 	//
@@ -20,7 +21,7 @@ type WindowsOptions struct {
 	HideWindow bool
 }
 
-// Build options string from *LeaklessOptions struct to pass to leakless
+// BuildOptionsString builds a string of flags from *LeaklessOptions struct
 func BuildOptionsString(options *LeaklessOptions) string {
 	if options == nil {
 		return ""
@@ -43,8 +44,7 @@ func BuildOptionsString(options *LeaklessOptions) string {
 	return strings.Join(args, " ")
 }
 
-// Parse options string and recover *LeaklessOptions struct to use inside
-// leakless
+// ParseOptionsString recovers *LeaklessOptions struct from a string of flags
 func ParseOptionsString(input string) *LeaklessOptions {
 	options := &LeaklessOptions{
 		Windows: &WindowsOptions{
