@@ -80,12 +80,7 @@ func build(target utils.Target) {
 		"-o", filepath.FromSlash("dist/leakless-" + target.BinName()),
 	}
 
-	ldFlags := "-ldflags=-w -s"
-	if target.OS() == "windows" {
-		// On Windows, -H windowsgui writes a "GUI binary" instead of a "console binary."
-		ldFlags += " -H=windowsgui"
-	}
-	flags = append(flags, ldFlags)
+	flags = append(flags, "-ldflags=-w -s")
 
 	flags = append(flags, filepath.FromSlash("./cmd/leakless"))
 
