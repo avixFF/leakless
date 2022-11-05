@@ -28,6 +28,8 @@ func TestMain(m *testing.M) {
 	utils.Exec("go", "dist", "build", "../cmd/test")
 	utils.Exec("go", "dist", "build", "../cmd/zombie")
 
+	buildWindowsBinary()
+
 	os.Exit(m.Run())
 }
 
